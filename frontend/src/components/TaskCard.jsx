@@ -6,17 +6,24 @@ import {
   Calendar,
   CheckCircle2,
   Circle,
-  CircleAlert,
   SquarePen,
   Trash,
+  EllipsisVertical, // Import for options button
 } from "lucide-react";
 import { Input } from "./ui/input";
 import api from "@/lib/axious";
 import { toast } from "sonner";
+// Import Popover components
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 
 const TaskCard = ({ task, index, handleTaskChanged }) => {
   const [isEditting, setIsEditting] = useState(false);
   const [updateTaskTitle, setUpdateTaskTitle] = useState(task.title || "");
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false); // State for popover
 
   const deleteTask = async (taskId) => {
     try {
@@ -70,10 +77,11 @@ const TaskCard = ({ task, index, handleTaskChanged }) => {
       updateTask();
     }
   };
+
   return (
     <Card
       className={cn(
-        "p-4 bg-gradient-card border-0 shadow-custom-md hover:shadow-custom-lg transition-all duration-200 animation-fade-in group",
+        "p-4 bg-gradient-card border-0 shadow-custom-md hover:shadow-custom-lg transition-all duration-200 animation-fade-in group focus-within:shadow-custom-lg",
         task.status === "complete" && "opacity-75",
       )}
       style={{ animationDelay: `${index * 50}ms` }}
@@ -116,7 +124,7 @@ const TaskCard = ({ task, index, handleTaskChanged }) => {
           ) : (
             <p
               className={cn(
-                "text-base trasition-all duration-200",
+                "text-base transition-all duration-200",
                 task.status === "complete"
                   ? "line-through text-muted-foreground"
                   : "text-foreground",
@@ -144,8 +152,8 @@ const TaskCard = ({ task, index, handleTaskChanged }) => {
           </div>
         </div>
 
-        {/* nút chỉnh và xóa */}
-        <div className="hidden gap-2 group-hover:flex animate-slide-up">
+        {/* Edit and Delete Buttons - Visible on PC (hover), Hidden on Mobile */}
+        <div className="hidden md:flex gap-2 opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:translate-y-0 group-focus-within:pointer-events-auto transition-all duration-200">
           {/* Nút edit */}
           <Button
             variant="ghost"
@@ -168,7 +176,51 @@ const TaskCard = ({ task, index, handleTaskChanged }) => {
             <Trash className="size-4" />
           </Button>
         </div>
-      </div>
+
+        {/* Options Popover - Visible on Mobile, Hidden on PC */}
+        <div className="md:hidden">
+          <Popover open={isOptionsOpen} onOpenChange={setIsOptionsOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="flex-shrink-0 transition-colors size-8 text-muted-foreground hover:text-primary"
+              >
+                <EllipsisVertical className="size-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-2" align="end">
+              <div className="flex flex-col gap-1">
+                {/* Nút edit (inside popover for mobile) */}
+                <Button
+                  variant="ghost"
+                  className="justify-start w-full gap-2 text-muted-foreground hover:text-info"
+                  onClick={() => {
+                    setIsOptionsOpen(false); // Manually close popover
+                    setIsEditting(true);
+                    setUpdateTaskTitle(task.title || "");
+                  }}
+                >
+                  <SquarePen className="size-4" />
+                  Chỉnh sửa
+                </Button>
+                {/* Nút delete (inside popover for mobile) */}
+                <Button
+                  variant="ghost"
+                  className="justify-start w-full gap-2 text-destructive hover:text-destructive/80"
+                  onClick={() => {
+                    setIsOptionsOpen(false); // Manually close popover
+                    deleteTask(task._id);
+                  }}
+                >
+                  <Trash className="size-4" />
+                  Xóa
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>{" "}
     </Card>
   );
 };

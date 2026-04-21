@@ -11,4 +11,15 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      // proxy requests starting with /api to the backend server
+      "/api": {
+        target: "http://localhost:5001", // <<-- ĐÃ CẬP NHẬT PORT LÊN 5001
+        changeOrigin: true,
+        // rewrite path để loại bỏ tiền tố /api trước khi gửi đến backend
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
+  },
 });
